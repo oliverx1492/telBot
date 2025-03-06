@@ -21,6 +21,43 @@ const cron = require("node-cron")
 // data.json PFAD
 const filePath = path.join(__dirname, "data.json")
 
+// Datum speicher
+
+const saveDate = (date) => {
+
+  console.log(date)
+
+  fs.readFile(filePath, "utf-8", (err, data) => {
+    if (err) {
+      bot.sendMessage(CHAT_ID, `Ein Fehler ist aufgetreten: ${err}`)
+    }
+
+    else {
+
+      let jsonData = []
+      if (data) {
+        jsonData = JSON.parse(data)
+      }
+
+      jsonData.push(date)
+
+      fs.writeFile(filePath, JSON.stringify(jsonData, null, 2), (err) => {
+        if (err) {
+          bot.sendMessage(CHAT_ID, `Ein Fehler ist aufgetreten: ${err}`)
+        }
+
+        else {
+          bot.sendMessage(CHAT_ID, `Aktualsiert`)
+        }
+
+      })
+
+    }
+  })
+
+
+}
+
 app.use(cors())
 app.use(express.json())
 
@@ -52,6 +89,8 @@ app.post("/getMessage", async (req, res) => {
 bot.on("message", (msg) => {
   console.log("NACHRICHT: ", msg.text)
 
+
+
   if (msg.text.toLowerCase() === "/help") {
     bot.sendMessage(CHAT_ID,
       `Hier ist eine Übersicht mit allen Befehlen:
@@ -66,22 +105,45 @@ bot.on("message", (msg) => {
 
   // Letze Düngung erfahren
   else if (msg.text.toLowerCase() === "/wann") {
-    bot.sendMessage(CHAT_ID, "Die letzte Düngung war Sanstag 22.Februar ")
+    fs.readFile(filePath, "utf-8", (err, data) => {
+      if (err) {
+        bot.sendMessage(CHAT_ID, `Fehler aufgetreten: ${err}`)
+      }
+
+      else {
+        console.log(data)
+        const allData = JSON.parse(data)
+        const lastDate = allData[allData.length - 1]
+        bot.sendMessage(CHAT_ID, `Deine Pflanzen wurden zuletzt am ${lastDate} gedüngt`)
+      }
+    })
+
   }
 
   // Alle Düngungen erfahren
   else if (msg.text.toLowerCase() === "/alle") {
-    bot.sendMessage(CHAT_ID, "Ein Überblick über alle Düngungen: xx xx xx")
+
+    fs.readFile(filePath, "utf-8", (err, data) => {
+      if (err) {
+        bot.sendMessage(CHAT_ID, `Fehler aufgetreten: ${err}`)
+      }
+
+      else {
+        bot.sendMessage(CHAT_ID, ` Behalte den Überblick und sorge für gesunde Pflanzen\n\n ${data.replace(/"/g, '').slice(3, -2)}`)
+      }
+    })
+
+
   }
 
-  else if(msg.text.toLowerCase() === "/heute") {
+  else if (msg.text.toLowerCase() === "/heute") {
     // DATUM in LESBARER FORMAT UNGEWANDELT
     const today = new Date().toISOString().split('T')[0].split('-').reverse().join('.');
-    
-    console.log("DATUM: ", today)
 
-    bot.sendMessage(CHAT_ID, "Gespeichert")
-   
+    console.log("DATUM: ", today)
+    saveDate(today)
+    bot.sendMessage(CHAT_ID, "Super! Deine Pflanzen wurden heute gedüngt. Sie sind jetzt bestens versorgt!")
+
   }
 
   else {
@@ -93,9 +155,11 @@ bot.on("message", (msg) => {
 })
 
 // Nachricht planen für 25.2 15:35
-cron.schedule('34 15 25 2 *', () => {
-  bot.sendMessage(CHAT_ID, "Hallo es ist 15:34")
-  console.log("Nachricht gesendet um 15:34")
+cron.schedule('30 10 * * 6', () => {
+  bot.sendMessage(CHAT_ID, "Es ist Zeit mich zu düngen")
+
+}, {
+  timezone: "Europe/Berlin"
 })
 
 
