@@ -1,7 +1,7 @@
 // server.js
 const express = require('express');
 const app = express();
-const port = 3000; // Port, auf dem der Server läuft
+const port = process.env.PORT || 3000; // Port, auf dem der Server läuft
 const cors = require("cors")
 
 const fs = require("fs")
