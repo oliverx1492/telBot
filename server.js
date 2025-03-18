@@ -20,8 +20,7 @@ const cron = require("node-cron")
 
 // DATABASE KONFIGURIEREN
 const {Pool} = require("pg");
-const { log } = require('console');
-const { act } = require('react');
+
 
 const pool = new Pool({
   connectionString: process.env.DATABASE_URL,
