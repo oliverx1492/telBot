@@ -18,45 +18,30 @@ const bot = new TelegramBot(TELEGRAM_TOKEN, { polling: true })
 // Planung
 const cron = require("node-cron")
 
+// DATABASE KONFIGURIEREN
+const {Pool} = require("pg");
+const { log } = require('console');
+const { act } = require('react');
+
+const pool = new Pool({
+  connectionString: process.env.DATABASE_URL,
+  ssl: {
+    rejectUnauthorized: false
+  }
+})
+
+pool.connect()
+  .then( ()=> console.log("POSTGRES SQL CONNECTED") )
+  .catch(err => console.error("FEHLER: ", err))
+
+
+module.exports = pool
+
+
 // data.json PFAD
 const filePath = path.join(__dirname, "data.json")
 
-// Datum speicher
 
-const saveDate = (date) => {
-
-  console.log(date)
-
-  fs.readFile(filePath, "utf-8", (err, data) => {
-    if (err) {
-      bot.sendMessage(CHAT_ID, `Ein Fehler ist aufgetreten: ${err}`)
-    }
-
-    else {
-
-      let jsonData = []
-      if (data) {
-        jsonData = JSON.parse(data)
-      }
-
-      jsonData.push(date)
-
-      fs.writeFile(filePath, JSON.stringify(jsonData, null, 2), (err) => {
-        if (err) {
-          bot.sendMessage(CHAT_ID, `Ein Fehler ist aufgetreten: ${err}`)
-        }
-
-        else {
-          bot.sendMessage(CHAT_ID, `Aktualsiert`)
-        }
-
-      })
-
-    }
-  })
-
-
-}
 
 app.use(cors())
 app.use(express.json())
@@ -85,6 +70,72 @@ app.post("/getMessage", async (req, res) => {
 
 })
 
+
+// Funktionen
+
+// Alle Termine abrufen
+const alle = async ( ) => {
+  try {
+    const result = await pool.query('SELECT * FROM alle')
+    console.log("RESULT: ", result.rows)
+    
+    const alleTermine = result.rows.map(row => row.date.toISOString().slice(0,10))
+    console.log("ALLE TERMINE: ", alleTermine)
+
+
+    // Antwort vom Bot
+    bot.sendMessage(CHAT_ID, `Behalte den Überblick und sorge für gesunde Pflanzen\n\n${JSON.stringify(alleTermine).replace(/"/g, '').replace(/-/g, '.').replace(/,/g, '\n').slice(1,-1)}`)
+  }
+
+  catch (err) {
+    console.log("Fehler aufgetreten: ", err)
+    bot.sendMessage(CHAT_ID, `Ein Fehler ist aufgetreten: ${err}`)
+  }
+}
+
+// Letzten Termin abrufen
+const wann = async ( ) => {
+  try {
+    const result = await pool.query('SELECT * FROM alle')
+    console.log("RESULT: ", result.rows)
+
+    const alleTermine = result.rows.map(row => row.date.toISOString().slice(0,10))
+    const letzterTermin = alleTermine[alleTermine.length - 1]
+   
+    bot.sendMessage(CHAT_ID, `Deine Pflanzen wurden zuletzt am ${letzterTermin} gedüngt`)
+  }
+
+  catch (err) {
+    console.log("Fehler aufgetreten: ", err)
+    bot.sendMessage(CHAT_ID, `Ein Fehler ist aufgetreten: ${err}`)
+  }
+}
+
+// Neuen Eintrag erstekkeb
+const heute = async ( ) => {
+  try {
+    const result = await pool.query('INSERT INTO alle DEFAULT VALUES RETURNING *')
+    console.log(result.rows[0])
+
+    // prüfen ob erfolgreich war
+    if(result.rows.length > 0) {
+      bot.sendMessage(CHAT_ID, "Aktualisierung erfolgreich. Mit /alle kannst du alle vergangenen Termine einsehen")
+    }
+
+    else {
+      bot.sendMessage(CHAT_ID, "Ein Fehler ist aufgetreten")
+    }
+
+
+  }
+
+  catch (err) {
+    console.log("Fehler aufgetreten: ", err)
+    bot.sendMessage(CHAT_ID, `Ein Fehler ist aufgetreten: ${err}`)
+  }
+}
+
+
 // Bot interaktionen 
 bot.on("message", (msg) => {
   console.log("NACHRICHT: ", msg.text)
@@ -98,63 +149,41 @@ bot.on("message", (msg) => {
       - /alle Alle Termine
       - /heute Heutigen Tag eintragen lassen
       `
-
     )
   }
 
 
   // Letze Düngung erfahren
   else if (msg.text.toLowerCase() === "/wann") {
-    fs.readFile(filePath, "utf-8", (err, data) => {
-      if (err) {
-        bot.sendMessage(CHAT_ID, `Fehler aufgetreten: ${err}`)
-      }
-
-      else {
-        console.log(data)
-        const allData = JSON.parse(data)
-        const lastDate = allData[allData.length - 1]
-        bot.sendMessage(CHAT_ID, `Deine Pflanzen wurden zuletzt am ${lastDate} gedüngt`)
-      }
-    })
+    
+    console.log("WANN")
+    wann()
 
   }
 
   // Alle Düngungen erfahren
   else if (msg.text.toLowerCase() === "/alle") {
 
-    fs.readFile(filePath, "utf-8", (err, data) => {
-      if (err) {
-        bot.sendMessage(CHAT_ID, `Fehler aufgetreten: ${err}`)
-      }
-
-      else {
-        bot.sendMessage(CHAT_ID, ` Behalte den Überblick und sorge für gesunde Pflanzen\n\n ${data.replace(/"/g, '').slice(3, -2)}`)
-      }
-    })
+    console.log("ALLE")
+    alle()
 
 
   }
 
+  // Eintrag machen
   else if (msg.text.toLowerCase() === "/heute") {
-    // DATUM in LESBARER FORMAT UNGEWANDELT
-    const today = new Date().toISOString().split('T')[0].split('-').reverse().join('.');
+   
+    console.log("heute")
+    heute()
 
-    console.log("DATUM: ", today)
-    saveDate(today)
-    bot.sendMessage(CHAT_ID, "Super! Deine Pflanzen wurden heute gedüngt. Sie sind jetzt bestens versorgt!")
 
-  }
 
-  else {
-    bot.sendMessage(CHAT_ID,
-      `Hier ist der Zitrusbot. \nLasse dir mit /help alle verfügbaren Befehle anzeigen`)
   }
 
 
 })
 
-// Nachricht planen für 25.2 15:35
+// Nachricht planen für jeden SAMSTAG 10 UHR 30
 cron.schedule('30 10 * * 6', () => {
   bot.sendMessage(CHAT_ID, "Es ist Zeit mich zu düngen")
 
