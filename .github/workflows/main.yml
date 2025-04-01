@@ -16,5 +16,5 @@ jobs:
       - name: Call WebService URL
         run: |
           echo "Calling WebService..."
-          curl -v -X GET "https://www.telbot-7bag.onrender.com/"
+          curl -v -X GET "https://www.telbot-7bag.onrender.com/remindme"
           echo "Request finished."
