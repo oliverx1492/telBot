@@ -1,0 +1,20 @@
+name: Call WebService Weekly
+
+on:
+  push:  # Trigger bei jedem Push ins Repository
+  workflow_dispatch:  # Manuelles Starten über GitHub Actions möglich
+  schedule:
+    - cron: '00 10 * * 6'  # Jeden Dienstag um 11:10 Wien-Zeit (Winter)
+
+jobs:
+  call-webservice:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Debugging - Zeige aktuelle Zeit an
+        run: date
+
+      - name: Call WebService URL
+        run: |
+          echo "Calling WebService..."
+          curl -v -X GET "https://telbot-7bag.onrender.com/remindme"
+          echo "Request finished."
