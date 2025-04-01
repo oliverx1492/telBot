@@ -3,7 +3,7 @@ name: Call WebService Weekly
 on:
   schedule:
     # Jeden Samstag um 10:30 UTC ausführen
-    - cron: '51 10 * * 2'  # ⚠️ Cron-Syntax: 6 = Samstag (0-6, Sonntag=0)
+    - cron: '52 9 * * 2'  # ⚠️ Cron-Syntax: 6 = Samstag (0-6, Sonntag=0)
 
 jobs:
   call-webservice:
