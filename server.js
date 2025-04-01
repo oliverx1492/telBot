@@ -193,6 +193,10 @@ bot.on("message", (msg) => {
 
   }
 
+  else {
+    bot.sendMessage(CHAT_ID, "Lasse die mit /help alle verfügbaren Befehele anzeigen")
+  }
+
 })
 
 
@@ -205,7 +209,7 @@ cron.schedule('30 10 * * 6', () => {
   timezone: "Europe/Berlin"
 })
 
-
+// ELSE FUNKTION HINZUFÜGE
 
 // Server starten
 app.listen(port, () => {
