@@ -2,20 +2,16 @@ name: Call WebService Weekly
 
 on:
   schedule:
-    # Jeden Samstag um 10:30 UTC ausführen
-    - cron: '02 * * * *'  # ⚠️ Cron-Syntax: 6 = Samstag (0-6, Sonntag=0)
+    - cron: '5 10 * * 2'  # Entspricht 11:10 Wien-Zeit im Winter
 
 jobs:
   call-webservice:
     runs-on: ubuntu-latest
     steps:
-      - name: Call WebService URL (triggers Telegram notification)
+      - name: Set timezone to Vienna
+        run: sudo timedatectl set-timezone Europe/Vienna
+
+      - name: Call WebService URL
         run: |
           # Führe den Aufruf mit curl durch
-          curl -X GET "https://telbot-7bag.onrender.com/remindme"
-          
-          # Optionale Statusprüfung (falls benötigt)
-          if [ $? -ne 0 ]; then
-            echo "Fehler beim Aufruf des WebServices!"
-            exit 1
-          fi
+          curl --fail -X GET "https://telbot-7bag.onrender.com/remindme"
