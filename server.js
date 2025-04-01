@@ -69,6 +69,20 @@ app.post("/getMessage", async (req, res) => {
 
 })
 
+app.get("/remindme",  (req,res) => {
+  try {
+    bot.sendMessage(CHAT_ID, "Es ist wieder Zeit, uns zu düngen")
+    
+  }
+
+  catch (err) {
+    bot.sendMessage(CHAT_ID, "Fehler beim Erinnern")
+    
+  }
+  res.status(200).send("Läuft")
+  
+})
+
 
 // Funktionen
 
@@ -179,8 +193,9 @@ bot.on("message", (msg) => {
 
   }
 
-
 })
+
+
 
 // Nachricht planen für jeden SAMSTAG 10 UHR 30
 cron.schedule('30 10 * * 6', () => {
