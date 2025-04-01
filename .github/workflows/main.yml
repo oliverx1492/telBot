@@ -3,7 +3,7 @@ name: Call WebService Weekly
 on:
   schedule:
     # Jeden Samstag um 10:30 UTC ausführen
-    - cron: '56 * * * 2'  # ⚠️ Cron-Syntax: 6 = Samstag (0-6, Sonntag=0)
+    - cron: '00 11 * * 2'  # ⚠️ Cron-Syntax: 6 = Samstag (0-6, Sonntag=0)
 
 jobs:
   call-webservice:
@@ -12,7 +12,7 @@ jobs:
       - name: Call WebService URL (triggers Telegram notification)
         run: |
           # Führe den Aufruf mit curl durch
-          curl -X GET "https://telbot-7bag.onrender.com"
+          curl -X GET "https://telbot-7bag.onrender.com/remindme"
           
           # Optionale Statusprüfung (falls benötigt)
           if [ $? -ne 0 ]; then
