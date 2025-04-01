@@ -2,7 +2,7 @@ name: Call WebService Weekly
 
 on:
   schedule:
-    - cron: '5 10 * * 2'  # Entspricht 11:10 Wien-Zeit im Winter
+    - cron: '*/5 * * * *'  # Entspricht 11:10 Wien-Zeit im Winter
 
 jobs:
   call-webservice:
