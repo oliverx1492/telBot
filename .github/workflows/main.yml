@@ -4,7 +4,7 @@ on:
   push:  # Trigger bei jedem Push ins Repository
   workflow_dispatch:  # Manuelles Starten über GitHub Actions möglich
   schedule:
-    - cron: '20 10 * * 2'  # Jeden Dienstag um 11:10 Wien-Zeit (Winter)
+    - cron: '00 10 * * 6'  # Jeden Dienstag um 11:10 Wien-Zeit (Winter)
 
 jobs:
   call-webservice:
