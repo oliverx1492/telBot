@@ -202,12 +202,7 @@ bot.on("message", (msg) => {
 
 
 // Nachricht planen für jeden SAMSTAG 10 UHR 30
-cron.schedule('30 10 * * 6', () => {
-  bot.sendMessage(CHAT_ID, "Es ist Zeit mich zu düngen")
 
-}, {
-  timezone: "Europe/Berlin"
-})
 
 // ELSE FUNKTION HINZUFÜGE
 
