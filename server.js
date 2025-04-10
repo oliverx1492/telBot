@@ -29,12 +29,6 @@ const pool = new Pool({
   }
 })
 
-pool.connect()
-  .then( ()=> console.log("POSTGRES SQL CONNECTED") )
-  .catch(err => console.error("FEHLER: ", err))
-
-
-module.exports = pool
 
 
 // data.json PFAD
@@ -47,27 +41,10 @@ app.use(express.json())
 
 // Ein einfacher GET-Endpunkt
 app.get('/', (req, res) => {
-  res.send('Hallo Welt!');
+  res.status(200).send('Hallo Welt!');
 });
 
-app.post("/getMessage", async (req, res) => {
-  console.log(req.body[0].message)
-  const msg = req.body[0].message
 
-  if (!CHAT_ID || !msg) return res.status(400).json({ error: "Fehlende Parameter" });
-
-  try {
-    await bot.sendMessage(CHAT_ID, msg)
-    res.json({ success: true, message: "Nachricht gesendet" })
-  }
-
-
-  catch (error) {
-    res.status(500).json({ error: error })
-  }
-
-
-})
 
 app.get("/remindme",  (req,res) => {
   try {
@@ -201,10 +178,7 @@ bot.on("message", (msg) => {
 
 
 
-// Nachricht planen für jeden SAMSTAG 10 UHR 30
 
-
-// ELSE FUNKTION HINZUFÜGE
 
 // Server starten
 app.listen(port, () => {
